@@ -1,25 +1,41 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-
-// Initialize Express app
+const { exec } = require('child_process');
 const app = express();
 const port = 3000;
 
-// Middleware to parse JSON request body
-app.use(bodyParser.json());
+// Middleware to parse JSON body
+app.use(express.json());
 
-// POST endpoint for GitHub webhook at /deploy
 app.post('/deploy', (req, res) => {
-  console.log('Received GitHub webhook:', req.body);
+  const { ref } = req.body;
 
-  // Check if the push is to the main branch
-  if (req.body.ref === 'refs/heads/main') {
-    console.log('Push detected to the main branch!');
-    // Add your deployment logic here (e.g., pulling new changes, restarting services)
-    res.status(200).send('Deployment triggered');
+  // Only deploy if the branch is `main`
+  if (ref === 'refs/heads/main') {
+    console.log('Deployment detected for main branch!');
+    
+    // Pull the latest changes from GitHub
+    exec('git pull origin main', (err, stdout, stderr) => {
+      if (err) {
+        console.error(`Error pulling the latest changes: ${stderr}`);
+        return res.status(500).send('Failed to pull the latest changes.');
+      }
+
+      console.log('Successfully pulled the latest changes');
+      console.log(stdout);
+
+      // Restart your app (optional)
+      exec('pm2 restart app-name', (err, stdout, stderr) => {
+        if (err) {
+          console.error(`Error restarting the app: ${stderr}`);
+          return res.status(500).send('Failed to restart the app.');
+        }
+
+        console.log('App successfully restarted');
+        return res.status(200).send('Deployment complete');
+      });
+    });
   } else {
-    console.log('Push detected to a non-main branch');
-    res.status(200).send('No deployment action needed');
+    res.status(200).send('No action taken. Not the main branch.');
   }
 });
 
