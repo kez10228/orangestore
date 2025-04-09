@@ -1,29 +1,31 @@
-const express = require("express");
-const multer = require("multer");
-const cors = require("cors");
-const path = require("path");
+const express = require('express');
+const { exec } = require('child_process');
+const bodyParser = require('body-parser');
+
 const app = express();
+const port = 3000;
 
-app.use(cors());
+app.use(bodyParser.json());
 
-// Save files to 'uploads/' folder
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // unique name
-  },
+// Webhook listener for GitHub events
+app.post('/deploy', (req, res) => {
+  const payload = req.body;
+  if (payload.ref === 'refs/heads/main') {
+    console.log('Push received on main branch, deploying...');
+    exec('git pull origin main', { cwd: '/path/to/your/project' }, (err, stdout, stderr) => {
+      if (err) {
+        console.error(`exec error: ${err}`);
+        return res.status(500).send('Error pulling latest code');
+      }
+      console.log(stdout);
+      res.status(200).send('Deployment started');
+    });
+  } else {
+    console.log('Push not on main branch, ignoring.');
+    res.status(200).send('Not main branch, skipping deployment');
+  }
 });
 
-const upload = multer({ storage });
-
-app.post("/upload", upload.single("file"), (req, res) => {
-  const file = req.file;
-  if (!file) return res.status(400).json({ error: "No file uploaded" });
-
-  // In production, you'd return a public URL here
-  const fileURL = `https://your-domain.com/uploads/${file.filename}`;
-  res.json({ fileURL });
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
-
-app.listen(3000, () => console.log("Server running on port 3000"));
-
