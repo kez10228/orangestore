@@ -1,41 +1,48 @@
-const express = require("express");
-const multer = require("multer");
-const cors = require("cors");
-const path = require("path");
+const express = require('express');
 const bodyParser = require('body-parser');
-const { exec } = require('child_process');  // For running commands like `git pull`
+const crypto = require('crypto');
 
+// Initialize Express app
 const app = express();
-const port = 3000;  // This can be any port your server should listen on
+const port = 3000;
 
-// Middleware to parse JSON payload
+// GitHub secret for verifying webhook authenticity (configure in GitHub)
+const GITHUB_SECRET = 'your_github_secret_key';
+
+// Middleware to parse JSON request body
 app.use(bodyParser.json());
 
-// Add your webhook listener code to a different endpoint
-app.post('/deploy', (req, res) => {
-  const payload = req.body;
+// Function to verify the GitHub webhook signature
+function verifyGitHubSignature(req, res, next) {
+  const signature = req.headers['x-hub-signature'];
+  const payload = JSON.stringify(req.body);
 
-  // Only deploy on push to the main branch (you can adjust this as needed)
-  if (payload.ref === 'refs/heads/main') {
-    console.log('Push received on main branch, deploying...');
+  const hmac = crypto.createHmac('sha1', GITHUB_SECRET);
+  const digest = `sha1=${hmac.update(payload).digest('hex')}`;
 
-    // Run a shell command to pull the latest code from the repo
-    exec('git pull origin main', { cwd: '/home/ubuntu/orangestore' }, (err, stdout, stderr) => {
-      if (err) {
-        console.error(`exec error: ${err}`);
-        return res.status(500).send('Error pulling latest code');
-      }
-
-      console.log(stdout);
-      return res.status(200).send('Deployment started');
-    });
+  if (signature === digest) {
+    next(); // Signature valid, proceed
   } else {
-    console.log('Push not on main branch, ignoring.');
-    return res.status(200).send('Not main branch, skipping deployment');
+    res.status(401).send('Unauthorized: Signature mismatch');
+  }
+}
+
+// POST endpoint for GitHub webhook at /deploy
+app.post('/deploy', verifyGitHubSignature, (req, res) => {
+  console.log('Received GitHub webhook:', req.body);
+
+  // Check if the push is to the main branch
+  if (req.body.ref === 'refs/heads/main') {
+    console.log('Push detected to the main branch!');
+    // Add your deployment logic here (e.g., pulling new changes, restarting services)
+    res.status(200).send('Deployment triggered');
+  } else {
+    console.log('Push detected to a non-main branch');
+    res.status(200).send('No deployment action needed');
   }
 });
 
-// Start the main server
+// Start the server
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });
