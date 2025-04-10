@@ -3,43 +3,37 @@ const { exec } = require('child_process');
 const app = express();
 const port = 3000;
 
-// Middleware to parse JSON body
 app.use(express.json());
 
 app.post('/deploy', (req, res) => {
-  const { ref } = req.body;
+  const branch = req.body.ref;
 
-  // Only deploy if the branch is `main`
-  if (ref === 'refs/heads/main') {
-    console.log('Deployment detected for main branch!');
-    
-    // Pull the latest changes from GitHub
+  if (branch === 'refs/heads/main') {
+    console.log('Deploying latest code...');
+
     exec('git pull origin main', (err, stdout, stderr) => {
       if (err) {
-        console.error(`Error pulling the latest changes: ${stderr}`);
-        return res.status(500).send('Failed to pull the latest changes.');
+        console.error(stderr);
+        return res.status(500).send('Failed to pull changes');
       }
 
-      console.log('Successfully pulled the latest changes');
       console.log(stdout);
 
-      // Restart your app (optional)
-      exec('pm2 restart app-name', (err, stdout, stderr) => {
+      exec('pm2 restart orangestore', (err, stdout, stderr) => {
         if (err) {
-          console.error(`Error restarting the app: ${stderr}`);
-          return res.status(500).send('Failed to restart the app.');
+          console.error(stderr);
+          return res.status(500).send('Failed to restart server');
         }
 
-        console.log('App successfully restarted');
-        return res.status(200).send('Deployment complete');
+        console.log(stdout);
+        res.status(200).send('Deployment complete!');
       });
     });
   } else {
-    res.status(200).send('No action taken. Not the main branch.');
+    res.status(200).send('Push detected but not on main branch, skipping deploy.');
   }
 });
 
-// Start the server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Deploy server listening on port ${port}`);
 });
