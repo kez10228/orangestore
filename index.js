@@ -24,29 +24,20 @@ app.use(express.json());
 
 // ---- Deploy Route ----
 app.post('/deploy', (req, res) => {
-  const { ref } = req.body;
+  console.log('Received GitHub webhook...');
 
-  if (ref === 'refs/heads/main') {
-    console.log('Forcing deploy...');
+  // Respond to GitHub immediately to prevent EOF
+  res.status(200).send('Webhook received and deployment started.');
 
-    exec('git fetch --all && git reset --hard origin/main', (err, stdout, stderr) => {
-      if (err) {
-        console.error(stderr);
-        return res.status(500).send('Git reset failed');
-      }
-
-      exec('pm2 restart orangestore', (err2, stdout2, stderr2) => {
-        if (err2) {
-          console.error(stderr2);
-          return res.status(500).send('App restart failed');
-        }
-
-        res.send('Deployed and restarted with hard reset');
-      });
-    });
-  } else {
-    res.send('Not main branch, skipping deploy');
-  }
+  // Perform deployment logic in the background
+  exec('git pull && npm install && pm2 restart orangestore', (err, stdout, stderr) => {
+    if (err) {
+      console.error('Error during deploy:', err);
+      return;
+    }
+    console.log('Deployment output:', stdout);
+    console.error('Deployment errors:', stderr);
+  });
 });
 
 app.post('/test', (req, res) => {
