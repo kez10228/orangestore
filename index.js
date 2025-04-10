@@ -49,6 +49,11 @@ app.post('/deploy', (req, res) => {
   }
 });
 
+app.post('/test', (req, res) => {
+  return res.send('Test successful!');
+});
+
+
 
 // ---- Upload Route ----
 app.post('/upload', upload.single('file'), (req, res) => {
