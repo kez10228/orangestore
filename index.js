@@ -27,12 +27,12 @@ app.post('/deploy', (req, res) => {
   const { ref } = req.body;
 
   if (ref === 'refs/heads/main') {
-    console.log('Deploying latest code...');
+    console.log('Forcing deploy...');
 
-    exec('git pull origin main', (err, stdout, stderr) => {
+    exec('git fetch --all && git reset --hard origin/main', (err, stdout, stderr) => {
       if (err) {
         console.error(stderr);
-        return res.status(500).send('Git pull failed');
+        return res.status(500).send('Git reset failed');
       }
 
       exec('pm2 restart orangestore', (err2, stdout2, stderr2) => {
@@ -41,13 +41,14 @@ app.post('/deploy', (req, res) => {
           return res.status(500).send('App restart failed');
         }
 
-        res.send('Deployed and restarted successfully');
+        res.send('Deployed and restarted with hard reset');
       });
     });
   } else {
-    res.send('Not main branch, skipping deployment');
+    res.send('Not main branch, skipping deploy');
   }
 });
+
 
 // ---- Upload Route ----
 app.post('/upload', upload.single('file'), (req, res) => {
