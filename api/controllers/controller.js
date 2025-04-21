@@ -5,33 +5,19 @@ const { exec } = require("child_process"); // For executing shell commands
 
 // Upload handler
 exports.upload = (req, res) => {
-  console.log("Upload endpoint hit");
+  const upload = multer({ dest: "uploads/" }).single("file");
 
-  const uploadDir = path.join(__dirname, "uploads");
-  if (!fs.existsSync(uploadDir)) {
-    console.log("Creating uploads directory");
-    fs.mkdirSync(uploadDir);
-  }
-
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      console.log("Setting destination for file upload");
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      console.log(`Setting filename: ${file.originalname}`);
-      cb(null, file.originalname);
-    },
-  });
-
-  const upload = multer({ storage });
-
-  upload.single("file")(req, res, (err) => {
+  upload(req, res, (err) => {
     if (err) {
       console.error("Upload error:", err);
       return res.status(400).send("No file uploaded.");
     }
+    if (!req.file) {
+      console.error("No file received");
+      return res.status(400).send("No file uploaded.");
+    }
     console.log(`File uploaded: ${req.file.originalname}`);
+    console.log(`File saved at: ${req.file.path}`);
     res.send(`File uploaded: ${req.file.originalname}`);
   });
 };
