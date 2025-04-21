@@ -37,7 +37,7 @@ exports.deploy = (req, res) => {
 
   // Perform deployment logic in the background
   exec(
-    "git pull && npm install && pm2 restart orangestore",
+    "sudo git pull && sudo npm install && sudo pm2 restart orangestore",
     (err, stdout, stderr) => {
       if (err) {
         console.error("Error during deploy:", err);
