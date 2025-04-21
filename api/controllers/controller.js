@@ -38,7 +38,14 @@ exports.deploy = (req, res) => {
   // Perform deployment logic in the background
   exec(
     "git pull && npm install && pm2 restart orangestore",
-    { env: { ...process.env, PATH: process.env.PATH } },
+    {
+      env: {
+        ...process.env,
+        PATH:
+          "/root/.local/state/fnm_multishells/131468_1745254813772/bin:" +
+          process.env.PATH,
+      },
+    },
     (err, stdout, stderr) => {
       if (err) {
         console.error("Error during deploy:", err);
