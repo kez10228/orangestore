@@ -5,20 +5,17 @@ const { exec } = require("child_process"); // For executing shell commands
 
 // Upload handler
 exports.upload = (req, res) => {
-  // Setup upload directory
   const uploadDir = path.join(__dirname, "uploads");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
   }
 
-  // Setup multer storage
   const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
     filename: (req, file, cb) => cb(null, file.originalname),
   });
   const upload = multer({ storage });
 
-  // Handle file upload
   upload.single("file")(req, res, (err) => {
     if (err) return res.status(400).send("No file uploaded.");
     res.send(`File uploaded: ${req.file.originalname}`);
