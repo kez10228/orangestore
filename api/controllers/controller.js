@@ -1,7 +1,9 @@
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const multer = require("multer"); // For handling file uploads
+const path = require("path"); // For working with file and directory paths
+const fs = require("fs"); // For file system operations
+const { exec } = require("child_process"); // For executing shell commands
 
+// Upload handler
 exports.upload = (req, res) => {
   // Setup upload directory
   const uploadDir = path.join(__dirname, "uploads");
@@ -23,11 +25,13 @@ exports.upload = (req, res) => {
   });
 };
 
+// Test endpoint
 exports.test = (req, res) => {
   console.log("Test endpoint hit.");
   return res.send("Test successful!");
 };
 
+// Deployment handler
 exports.deploy = (req, res) => {
   console.log("Received GitHub webhook...");
 
