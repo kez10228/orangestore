@@ -42,10 +42,11 @@ exports.upload = (req, res) => {
 // Serve uploaded files
 exports.uploads = (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(__dirname, "uploads", filename);
+  const filePath = path.resolve(__dirname, "../../uploads", filename); // Adjust path to point to the correct uploads directory
 
   // Check if the file exists
   if (!fs.existsSync(filePath)) {
+    console.error(`File not found: ${filePath}`);
     return res.status(404).send("File not found.");
   }
 
