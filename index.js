@@ -3,12 +3,22 @@ const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
 const routes = require("./api/routes/routes");
+const cors = require("cors");
 
 const app = express();
 const port = 80;
 
 // Middleware to parse JSON body
 app.use(express.json());
+
+// Allow requests from your frontend
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Replace with your frontend's URL
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+    credentials: true, // Allow cookies if needed
+  })
+);
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, "api/controllers/uploads");
