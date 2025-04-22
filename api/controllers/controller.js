@@ -35,7 +35,7 @@ exports.upload = (req, res) => {
     }`;
     console.log(`File uploaded: ${req.file.originalname}`);
     console.log(`File saved at: ${req.file.path}`);
-    console.log(`File URL: ${fileUrl}`);
+    console.log(`File URL: ${req.file.filename}`);
 
     // Send the full file URL in the response
     res.json({ imageUrl: fileUrl });
