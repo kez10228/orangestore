@@ -29,13 +29,16 @@ exports.upload = (req, res) => {
       return res.status(400).send("No file uploaded.");
     }
 
+    // Construct the full file URL
     const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${
       req.file.filename
     }`;
     console.log(`File uploaded: ${req.file.originalname}`);
     console.log(`File saved at: ${req.file.path}`);
     console.log(`File URL: ${fileUrl}`);
-    res.json({ imageUrl: req.file.filename });
+
+    // Send the full file URL in the response
+    res.json({ imageUrl: fileUrl });
   });
 };
 
