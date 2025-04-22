@@ -16,10 +16,27 @@ exports.upload = (req, res) => {
       console.error("No file received");
       return res.status(400).send("No file uploaded.");
     }
+
+    const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     console.log(`File uploaded: ${req.file.originalname}`);
     console.log(`File saved at: ${req.file.path}`);
-    res.send(`File uploaded: ${req.file.originalname}`);
+    console.log(`File URL: ${fileUrl}`);
+    res.json({ imageUrl: fileUrl });
   });
+};
+
+// Serve uploaded files
+exports.uploads = (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, "uploads", filename);
+
+  // Check if the file exists
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send("File not found.");
+  }
+
+  // Serve the file
+  res.sendFile(filePath);
 };
 
 // Test endpoint
