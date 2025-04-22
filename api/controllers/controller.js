@@ -3,10 +3,22 @@ const path = require("path"); // For working with file and directory paths
 const fs = require("fs"); // For file system operations
 const { exec } = require("child_process"); // For executing shell commands
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname); // Get the file extension
+    const baseName = path.basename(file.originalname, ext); // Get the base name without extension
+    const filename = `${Date.now()}-${baseName}${ext}`; // Preserve original filename and append extension
+    cb(null, filename);
+  },
+});
+
+const upload = multer({ storage }).single("file");
+
 // Upload handler
 exports.upload = (req, res) => {
-  const upload = multer({ dest: "uploads/" }).single("file");
-
   upload(req, res, (err) => {
     if (err) {
       console.error("Upload error:", err);
@@ -17,7 +29,9 @@ exports.upload = (req, res) => {
       return res.status(400).send("No file uploaded.");
     }
 
-    const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${
+      req.file.filename
+    }`;
     console.log(`File uploaded: ${req.file.originalname}`);
     console.log(`File saved at: ${req.file.path}`);
     console.log(`File URL: ${fileUrl}`);
