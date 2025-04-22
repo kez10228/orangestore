@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
+const multer = require("multer");
 const routes = require("./api/routes/routes");
 
 const app = express();
@@ -17,6 +18,17 @@ if (!fs.existsSync(uploadDir)) {
 
 // Serve the uploads directory
 app.use("/uploads", express.static(uploadDir));
+
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname); // Get the file extension
+    const filename = `${Date.now()}-${file.fieldname}${ext}`; // Generate a unique filename
+    cb(null, filename);
+  },
+});
+
+const upload = multer({ storage }).single("file");
 
 // Register routes
 routes(app);
