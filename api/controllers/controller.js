@@ -30,9 +30,7 @@ exports.upload = (req, res) => {
     }
 
     // Construct the full file URL
-    const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${
-      req.file.filename
-    }`;
+    const fileUrl = `https://${req.get("host")}/uploads/${req.file.filename}`; // Changed to https
     console.log(`File uploaded: ${req.file.originalname}`);
     console.log(`File saved at: ${req.file.path}`);
     console.log(`File URL: ${fileUrl}`);
