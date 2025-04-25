@@ -6,7 +6,7 @@ const routes = require("./api/routes/routes");
 const cors = require("cors");
 
 const app = express();
-const port = 80;
+const port = 3000;
 
 // Middleware to parse JSON body
 app.use(express.json());
