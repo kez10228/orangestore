@@ -5,7 +5,7 @@ const { exec } = require("child_process"); // For executing shell commands
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, path.resolve(__dirname, "../../uploads"));
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname); // Get the file extension
@@ -19,25 +19,33 @@ const upload = multer({ storage }).single("file");
 
 // Upload handler
 exports.upload = (req, res) => {
-  upload(req, res, (err) => {
-    if (err) {
-      console.error("Upload error:", err);
-      return res.status(400).send("No file uploaded.");
-    }
-    if (!req.file) {
-      console.error("No file received");
-      return res.status(400).send("No file uploaded.");
-    }
+  try {
+    upload(req, res, (err) => {
+      if (err) {
+        console.error("Upload error:", err);
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).send("File size exceeds the limit.");
+        }
+        return res.status(500).send("An error occurred during file upload.");
+      }
+      if (!req.file) {
+        console.error("No file received");
+        return res.status(400).send("No file uploaded.");
+      }
 
-    // Construct the full file URL
-    const fileUrl = `https://${req.get("host")}/uploads/${req.file.filename}`; // Changed to https
-    console.log(`File uploaded: ${req.file.originalname}`);
-    console.log(`File saved at: ${req.file.path}`);
-    console.log(`File URL: ${fileUrl}`);
+      const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${
+        req.file.filename
+      }`;
+      console.log(`File uploaded: ${req.file.originalname}`);
+      console.log(`File saved at: ${req.file.path}`);
+      console.log(`File URL: ${fileUrl}`);
 
-    // Send the full file URL in the response
-    res.json({ imageUrl: req.file.filename });
-  });
+      res.json({ imageUrl: fileUrl });
+    });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    res.status(500).send("An unexpected error occurred.");
+  }
 };
 
 // Serve uploaded files

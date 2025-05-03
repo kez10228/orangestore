@@ -38,8 +38,6 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage }).single("file");
-
 // Register routes
 routes(app);
 
