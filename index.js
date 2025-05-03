@@ -14,7 +14,7 @@ app.use(express.json());
 // Allow requests from your frontend
 app.use(
   cors({
-    origin: "https://orangearmy.co.uk", // Replace with your frontend's URL
+    origin: "*", // Replace with your frontend's URL
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
     credentials: true, // Allow cookies if needed
   })
