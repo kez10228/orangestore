@@ -14,7 +14,7 @@ app.use(express.json());
 // Allow requests from your frontend
 app.use(
   cors({
-    origin: "http://localhost:3000", // Replace with your frontend's URL
+    origin: "https://orangearmy.co.uk", // Replace with your frontend's URL
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
     credentials: true, // Allow cookies if needed
   })
@@ -30,7 +30,7 @@ if (!fs.existsSync(uploadDir)) {
 app.use("/uploads", express.static(uploadDir));
 
 const storage = multer.diskStorage({
-  destination: "uploads/",
+  destination: uploadDir, // Use the correct uploads directory
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname); // Get the file extension
     const filename = `${Date.now()}-${file.fieldname}${ext}`; // Generate a unique filename
