@@ -1,21 +1,32 @@
-const multer = require("multer"); // For handling file uploads
-const path = require("path"); // For working with file and directory paths
-const fs = require("fs"); // For file system operations
-const { exec } = require("child_process"); // For executing shell commands
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const { exec } = require("child_process");
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, "../../uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.resolve(__dirname, "../../uploads"));
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname); // Get the file extension
-    const baseName = path.basename(file.originalname, ext); // Get the base name without extension
-    const filename = `${Date.now()}-${baseName}${ext}`; // Preserve original filename and append extension
+    const ext = path.extname(file.originalname);
+    const baseName = path.basename(file.originalname, ext);
+    const filename = `${Date.now()}-${baseName}${ext}`;
     cb(null, filename);
   },
 });
 
-const upload = multer({ storage }).single("file");
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+}).single("file");
 
 // Upload handler
 exports.upload = (req, res) => {

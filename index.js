@@ -26,18 +26,6 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Serve the uploads directory
-app.use("/uploads", express.static(uploadDir));
-
-const storage = multer.diskStorage({
-  destination: uploadDir, // Use the correct uploads directory
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname); // Get the file extension
-    const filename = `${Date.now()}-${file.fieldname}${ext}`; // Generate a unique filename
-    cb(null, filename);
-  },
-});
-
 // Register routes
 routes(app);
 
