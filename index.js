@@ -21,10 +21,13 @@ app.use(
 );
 
 // Ensure uploads directory exists
-const uploadDir = path.join(__dirname, "api/controllers/uploads");
+const uploadDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+
+// Add this line after directory creation
+app.use("/uploads", express.static(uploadDir));
 
 // Register routes
 routes(app);
